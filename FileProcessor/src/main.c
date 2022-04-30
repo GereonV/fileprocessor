@@ -2,115 +2,207 @@
 #include <stdio.h>
 #include <string.h>
 
+#define ERR(...) fprintf(stderr, __VA_ARGS__)
+
 #define PATH_LENGTH 256
-typedef char PATH[PATH_LENGTH];
+typedef struct {
+    size_t length;  // with null-termination
+    char string[PATH_LENGTH];
+} PATH;
 
-long getFileSize(FILE *const file) {
-    long position, length;
-    position = ftell(file);
-    fseek(file, 0, SEEK_END);
-    length = ftell(file);
-    fseek(file, position, SEEK_SET);
-    return length;
+typedef enum {
+    MODE_NONE,
+    MODE_LF,
+    MODE_CRLF
+} MODE;
+
+typedef enum {
+    ARGUMENT_VALID,
+    ARGUMENT_TOO_LONG,
+    ARGUMENT_OUTPUT_REDEFINED,
+    ARGUMENT_MODE_INVALID,
+    ARGUMENT_MODE_REDEFINED,
+    ARGUMENT_OPTION_INVALID,
+    ARGUMENT_HELP
+} ARGUMENT;
+const char *ERRORS_ARGUMENT[] = {
+    "too long",
+    "Output already defined",
+    "not a valid Mode",
+    "Mode already defined",
+    "not a valid Option"
+};
+
+typedef ARGUMENT (*ARG_FUNC)(const char *, size_t);
+
+typedef enum {
+    STATE_VALID,
+    STATE_OUTPUT_UNDEFINED,
+    STATE_MODE_UNDEFINED
+} STATE;
+const char *ERRORS_STATE[] = {
+    "no Output provided",
+    "no Mode provided"
+};
+
+static size_t inputCount;
+static PATH outputPath, *inputPaths, directoryPath = { .length = 2, .string = "."};
+static MODE mode;
+
+static void toScreamingSnakeCase(char *const string, const size_t length) {
+    for(size_t i = 0; i < length; i++)
+        string[i] += ('A' - 'a') * (string[i] >= 'a' && string[i] <= 'z') + ('_' - '.') * (string[i] == '.');
 }
 
-void convertToConstant(const char *const filename, char *const constant) {
-    const char *s = strrchr(filename, '/') + 1;
-    size_t i, len = strlen(s);
-    for(i = 0; i < len; i++)
-        constant[i] = s[i] + ('A' - 'a') * (s[i] >= 'a' && s [i] <= 'z') + ('_' - '.') * (s[i] == '.');
-    constant[len] = 0;
+static ARGUMENT handleOutput(const char *const path, const size_t length) {
+    if(length >= PATH_LENGTH)
+        return ARGUMENT_TOO_LONG;
+    outputPath.length = length + 1;
+    strcpy(outputPath.string, path);
+    return ARGUMENT_VALID;
 }
 
-void outputString(const char *const constant, const char *const s, const char *const newLine, FILE *out, const char *const mode) {
-    size_t newLineLen = strlen(newLine);
-    fprintf(out, "static const char *%s = \"", constant);
-    const char *line = s, *lineEnd;
-    while(lineEnd = strstr(line, newLine)) {
-        for(const char *c = line; c != lineEnd; c++)
-            fputc(*c, out);
-        fprintf(out, "\\n\"%s\"", mode);
-        line = lineEnd + newLineLen;
+static ARGUMENT handleDirectory(const char *const directory, size_t length) {
+    char c = directory[length - 1];
+    length -= c == '/' || c == '\\';
+    if(length >= PATH_LENGTH)
+        return ARGUMENT_TOO_LONG;
+    directoryPath.length = length + 1;
+    strncpy(directoryPath.string, directory, length);
+    directoryPath.string[length] = 0;
+    return ARGUMENT_VALID;
+}
+
+static ARGUMENT handleMode(const char *const modeStr, const size_t length) {
+    if(mode)
+        return ARGUMENT_MODE_REDEFINED;
+    char *string = strdup(modeStr);
+    toScreamingSnakeCase(string, length);
+    if(!strcmp(string, "LF"))
+        mode = MODE_LF;
+    else if(!strcmp(string, "CRLF"))
+        mode = MODE_CRLF;
+    free(string);
+    return mode ? ARGUMENT_VALID : ARGUMENT_MODE_INVALID;
+}
+
+static inline ARGUMENT handleOption(const char *const option, const size_t length) {
+    ARG_FUNC func;
+    switch(option[0]) {
+        case 'O':
+            func = handleOutput;
+            break;
+        case 'D':
+            func = handleDirectory;
+            break;
+        case 'M':
+            func = handleMode;
+            break;
+        default:
+            return ARGUMENT_OPTION_INVALID;
     }
-    fprintf(out, "%s\";%s", line, mode, mode);
+    return func(option + 1, length - 1);
+}
+
+static ARGUMENT handleInput(const char *const path, const size_t length) {
+    static size_t pathsSize = 10;
+    size_t pathLength = directoryPath.length + length + 1;
+    if(pathLength >= PATH_LENGTH)
+        return ARGUMENT_TOO_LONG;
+    if(!inputPaths)
+        inputPaths = malloc(pathsSize * sizeof(PATH));
+    else if(inputCount == pathsSize)
+        inputPaths = realloc(inputPaths, (pathsSize <<= 1) * sizeof(PATH));
+    PATH *input = inputPaths + inputCount++;
+    input->length = pathLength;
+    strcpy(input->string, directoryPath.string);
+    input->string[directoryPath.length - 1] = '/';
+    strcpy(input->string + directoryPath.length, path);
+    return ARGUMENT_VALID;
+}
+
+static inline ARGUMENT handleArgument(const char *const argument) {
+    if(!strcmp(argument, "--help"))
+        return ARGUMENT_HELP;
+    size_t argumentLength = strlen(argument);
+    if(argument[0] == '-')
+        return handleOption(argument + 1, argumentLength - 1);
+    return handleInput(argument, argumentLength);
+}
+
+static inline STATE checkState() {
+    if(!*outputPath.string)
+        return STATE_OUTPUT_UNDEFINED;
+    if(!mode)
+        return STATE_MODE_UNDEFINED;
+    return STATE_VALID;
+}
+
+static void outputFormatted(const char *const name, char *const buffer, FILE *const outFile) {
+    const char *newLine = strchr(buffer, '\r') ? "\r\n" : "\n";
+    size_t newLineLength = strlen(newLine);
+    fprintf(outFile, "#define %s", name);
+    char *line = buffer, *lineEnd;
+    while(lineEnd = strstr(line, newLine)) {
+        *lineEnd = 0;
+        fprintf(outFile, " \\%s\"%s\\n\"", newLine, line);
+        line = lineEnd + newLineLength;
+    }
+    fprintf(outFile, " \\%s\"%s\"%s", newLine, line, newLine);
 }
 
 int main(const int argc, const char *const argv[]) {
-    unsigned int inputCount = 0;
-    PATH output = "", *inputs = malloc((argc - 2) * sizeof(PATH)), dir = ".";
-    char mode[3] = "";
-    size_t dirLen = strlen(dir);
-    for(int i = 1; i < argc; i++) {
-        const char *s = argv[i];
-        const size_t sLen = strlen(s);
-        if(s[0] == '-') {
-            if(sLen == 1 || sLen - 2 >= PATH_LENGTH) {
-                fprintf(stderr, "invalid option length at position %d: '%s'\n", i, s);
+    for(int argI = 1; argI < argc; argI++) {
+        ARGUMENT argument = handleArgument(argv[argI]);
+        switch(argument) {
+            case ARGUMENT_VALID:
+                continue;
+            case ARGUMENT_HELP:
+                printf(
+                    "Usage: [-O<output>] [-M<mode>] (<inputs>)\n"
+                    "Outputs the contents of several Files to one Source-File as Preprocessor-Macros.\n"
+                    "The string-constants are named like the Files they were taken from.\n"
+                    "(Order of the arguments may be ignored)\n\n"
+                    "\toutput: Path to the File to output to\n"
+                    "\tmode: Mode of Output-File: LF or CRLF\n"
+                    "\tinputs: List of Paths to Files to use\n"
+                    "\t\tPaths are relative to the current Directory\n"
+                    "\t\tThe current Directory can persistently be changed with \"-D<dir>\"\n"
+                );
+                return 0;
+            default:
+                ERR("Invalid Argument at position %u (%s): %s\n", argI, argv[argI], ERRORS_ARGUMENT[argument - 1]);
                 return -1;
-            }
-            switch(s[1]) {
-                case 'O':
-                    strcpy(output, s + 2);
-                    break;
-                case 'M':
-                    if(!strcmp(s + 2, "LF"))
-                        strcpy(mode, "\n");
-                    else if(!strcmp(s + 2, "CRLF"))
-                        strcpy(mode, "\r\n");
-                    else {
-                        fprintf(stderr, "invalid mode at position %d: '%s'\n", i, s);
-                        return -1;
-                    }
-                    break;
-                case 'D':
-                    strcpy(dir, s + 2);
-                    dirLen = sLen - 2;
-                    break;
-                default:
-                    fprintf(stderr, "invalid option at position %d: '%c'\n", i, s[1]);
-                    return -1;
-            }
-        } else {
-            if(dirLen + 1 + sLen >= PATH_LENGTH) {
-                fprintf(stderr, "too long filename: '%s/%s'\n", dir, s);
-                return -1;
-            }
-            char *ptr = inputs[inputCount++];
-            strcpy(ptr, dir);
-            ptr[dirLen] = '/';
-            strcpy(ptr + dirLen + 1, s);
         }
     }
-
-    if(!output[0]) {
-        fprintf(stderr, "no mode provided\n");
+    STATE state = checkState();
+    if(state) {
+        ERR("Invalid State: %s\n", ERRORS_STATE[state - 1]);
         return -1;
     }
-    if(!mode[0]) {
-        fprintf(stderr, "no mode provided\n");
+    FILE *outFile = fopen(outputPath.string, "wb");
+    if(!outFile) {
+        ERR("Output-File (%s) couldn't be opened\n", outputPath.string);
         return -1;
     }
-
-    FILE *out, *in;
-    if(!(out = fopen(output, "wb"))) {
-        fprintf(stderr, "couldn't open output: '%s'\n", output);
-        return -1;
-    }
-    PATH constant;
-    for(unsigned int i = 0; i < inputCount; i++) {
-        if(!(in = fopen(inputs[i], "rb"))) {
-            fprintf(stderr, "couldn't open input: '%s'\n", inputs[i]);
+    for(size_t i = 0; i < inputCount; i++) {
+        FILE *inFile = fopen(inputPaths[i].string, "rb");
+        if(!inFile) {
+            ERR("Input-File (%s) couldn't be opened\n", inputPaths[i].string);
             return -1;
         }
-        long length = getFileSize(in);
-        char *s = malloc(sizeof(char) * (length + 1));
-        fread(s, sizeof(char), length, in);
-        s[length] = 0;
-        convertToConstant(inputs[i], constant);
-        outputString(constant, s, strchr(s, '\r') ? "\r\n" : "\n", out, mode);
-        free(s);
-        fclose(in);
+        fseek(inFile, 0, SEEK_END);
+        long length = ftell(inFile);
+        rewind(inFile);
+        char *buffer = malloc(length + 1);
+        fread(buffer, 1, length, inFile);
+        buffer[length] = 0;
+        char *filename = strrchr(inputPaths[i].string, '/') + 1;
+        toScreamingSnakeCase(filename, inputPaths[i].length - (filename - inputPaths[i].string) - 1);
+        outputFormatted(filename, buffer, outFile);
+        free(buffer);
+        fclose(inFile);
     }
-    fclose(out);
-    free(inputs);
+    fclose(outFile);
+    free(inputPaths);
 }
