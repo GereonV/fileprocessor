@@ -166,16 +166,16 @@ int main(const int argc, const char *const argv[]) {
             case ARGUMENT_VALID:
                 continue;
             case ARGUMENT_HELP:
-                printf(
+                printf("\n"
                     "Usage: [-O<output>] [-M<mode>] (<inputs>)\n"
                     "Outputs the contents of several Files to one Source-File as Preprocessor-Macros.\n"
                     "The string-constants are named like the Files they were taken from.\n"
                     "(Order of the arguments may be ignored)\n\n"
-                    "\toutput: Path to the File to output to\n"
-                    "\tmode: Mode of Output-File: LF or CRLF\n"
-                    "\tinputs: List of Paths to Files to use\n"
-                    "\t\tPaths are relative to the current Directory\n"
-                    "\t\tThe current Directory can persistently be changed with \"-D<dir>\"\n"
+                    "output: Path to the File to output to\n\n"
+                    "mode: Mode of Output-File: LF or CRLF\n\n"
+                    "inputs: List of Paths to Files to use\n"
+                    "\tPaths are relative to the current Directory\n"
+                    "\tThe current Directory can persistently be changed with \"-D<dir>\"\n"
                 );
                 return 0;
             default:
