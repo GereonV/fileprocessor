@@ -15,6 +15,14 @@ typedef enum {
     MODE_LF,
     MODE_CRLF
 } MODE;
+typedef const struct {
+    size_t length;
+    const char *string;
+} LF;
+static LF lineFeeds[] = {
+    { .length = 1, .string = "\n" },
+    { .length = 2, .string = "\r\n" }
+};
 
 typedef enum {
     ARGUMENT_VALID,
@@ -25,7 +33,7 @@ typedef enum {
     ARGUMENT_OPTION_INVALID,
     ARGUMENT_HELP
 } ARGUMENT;
-const char *ERRORS_ARGUMENT[] = {
+static const char *ERRORS_ARGUMENT[] = {
     "too long",
     "Output already defined",
     "not a valid Mode",
@@ -40,7 +48,7 @@ typedef enum {
     STATE_OUTPUT_UNDEFINED,
     STATE_MODE_UNDEFINED
 } STATE;
-const char *ERRORS_STATE[] = {
+static const char *ERRORS_STATE[] = {
     "no Output provided",
     "no Mode provided"
 };
@@ -138,17 +146,17 @@ static inline STATE checkState() {
     return STATE_VALID;
 }
 
-static void outputFormatted(const char *const name, char *const buffer, FILE *const outFile) {
-    const char *newLine = strchr(buffer, '\r') ? "\r\n" : "\n";
-    size_t newLineLength = strlen(newLine);
+static void outputFormatted(const char *const name, char *const buffer, FILE *const outFile, LF *const outNewLine) {
+    const char *inNewLine = strchr(buffer, '\r') ? "\r\n" : "\n";
+    size_t inNewLineLength = strlen(inNewLine);
     fprintf(outFile, "#define %s", name);
     char *line = buffer, *lineEnd;
-    while(lineEnd = strstr(line, newLine)) {
+    while(lineEnd = strstr(line, inNewLine)) {
         *lineEnd = 0;
-        fprintf(outFile, " \\%s\"%s\\n\"", newLine, line);
-        line = lineEnd + newLineLength;
+        fprintf(outFile, " \\%s\"%s\\n\"", outNewLine->string, line);
+        line = lineEnd + inNewLineLength;
     }
-    fprintf(outFile, " \\%s\"%s\"%s", newLine, line, newLine);
+    fprintf(outFile, " \\%s\"%s\"%s", outNewLine->string, line, outNewLine->string);
 }
 
 int main(const int argc, const char *const argv[]) {
@@ -185,6 +193,7 @@ int main(const int argc, const char *const argv[]) {
         ERR("Output-File (%s) couldn't be opened\n", outputPath.string);
         return -1;
     }
+    LF *outNewLine = lineFeeds + mode - 1;
     for(size_t i = 0; i < inputCount; i++) {
         FILE *inFile = fopen(inputPaths[i].string, "rb");
         if(!inFile) {
@@ -199,7 +208,7 @@ int main(const int argc, const char *const argv[]) {
         buffer[length] = 0;
         char *filename = strrchr(inputPaths[i].string, '/') + 1;
         toScreamingSnakeCase(filename, inputPaths[i].length - (filename - inputPaths[i].string) - 1);
-        outputFormatted(filename, buffer, outFile);
+        outputFormatted(filename, buffer, outFile, outNewLine);
         free(buffer);
         fclose(inFile);
     }
