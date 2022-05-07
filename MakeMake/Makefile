@@ -3,6 +3,7 @@ SRCEXT:=c
 SRCDIR:=src
 OBJDIR:=obj
 BIN:=makemake
+FP:=fileprocessor # path to executable
 
 CFLAGS:=
 LDFLAGS:=
@@ -26,16 +27,16 @@ release: LDFLAGS+=$(RELEASELDFLAGS)
 release: dirs $(BIN)
 OBJS:=$(patsubst $(SRCDIR)/%.$(SRCEXT),$(OBJDIR)/%.o,$(wildcard $(SRCDIR)/*.$(SRCEXT)))
 -include $(OBJS:%.o=%.d)
-$(BIN): $(OBJS)
+$(BIN): src/template.h $(OBJS)
 	$(C) $(OBJS) -o $@ $(LDFLAGS)
 $(OBJDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	$(C) -c $< -o $@ -MMD $(CFLAGS)
 src/template.h: Template.mk
-	./fileprocessor -O$@ -Mcrlf $<
+	$(FP) -O$@ $<
 dirs:
 	mkdir -p $(OBJDIR) $(dir $(BIN))
 clean:
-	rm -rf $(OBJDIR) $(BIN)
+	rm -rf $(OBJDIR) $(BIN) src/template.h
 ifneq '$(OS)' 'Windows_NT'
 	INSTALLPATH=/usr/local/bin/$(notdir $(BIN))
 	.PHONY: install uninstall
