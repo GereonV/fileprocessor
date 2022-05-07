@@ -2,7 +2,7 @@ C:=gcc
 SRCEXT:=c
 SRCDIR:=src
 OBJDIR:=obj
-BIN:=program
+BIN:=makemake
 
 CFLAGS:=
 LDFLAGS:=
