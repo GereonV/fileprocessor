@@ -73,7 +73,15 @@ int main(const int argc, const char *const argv[]) {
         }
     }
     validateState();
-    FILE *file = fopen("Makefile", "w");
+    FILE *file = fopen("Makefile", "r");
+    if(file) {
+        fclose(file);
+        printf("'Makefile' already exists and will be overridden.\nWould you like to continue? (Y/N)\n");
+        char c = getchar();
+        if(!(c == 'Y' || c == 'y'))
+            return -1;
+    }
+    file = fopen("Makefile", "w");
     if(!file) {
         ERR("Output-File (Makefile) couldn't be opened\n");
         return -1;
