@@ -3,7 +3,7 @@ SRCEXT:=c
 SRCDIR:=src
 OBJDIR:=obj
 BIN:=makemake
-FP:=../fileprocessor # path to executable
+FP:=../deps/fileprocessor # path to executable
 
 CFLAGS:=
 LDFLAGS:=
@@ -34,7 +34,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 src/template.h: Template.mk
 	$(FP) -O$@ $<
 dep: release
-	mv ./$(BIN) ../$(BIN)
+	mv ./$(BIN) ../deps/$(BIN)
 dirs:
 	mkdir -p $(OBJDIR) $(dir $(BIN))
 clean:

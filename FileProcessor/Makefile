@@ -31,7 +31,7 @@ $(BIN): $(OBJS)
 $(OBJDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	$(C) -c $< -o $@ -MMD $(CFLAGS)
 dep: release
-	mv ./$(BIN) ../$(BIN)
+	mv ./$(BIN) ../deps/$(BIN)
 dirs:
 	mkdir -p $(OBJDIR) $(dir $(BIN))
 clean:

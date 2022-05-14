@@ -2,9 +2,12 @@ TARGETS:=FileProcessor MakeMake
 
 .PHONY: all clean
 all:
+	mkdir deps
 	$(foreach dir,$(TARGETS),"$(MAKE)" -C $(dir) dep;)
 clean:
 	$(foreach dir,$(TARGETS),"$(MAKE)" -C $(dir) clean;)
+reset: clean
+	rm -rf deps MakeMake/src/template.h
 ifneq '$(OS)' 'Windows_NT'
 	.PHONY: install uninstall
 	install: all
