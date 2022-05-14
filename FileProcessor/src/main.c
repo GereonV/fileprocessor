@@ -30,7 +30,7 @@ typedef enum {
     STATE_OUTPUT_UNDEFINED
 } STATE;
 static const char *ERRORS_STATE[] = {
-    "no Output provided",
+    "no Output provided"
 };
 
 static size_t inputCount;
