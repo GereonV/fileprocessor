@@ -39,7 +39,6 @@ ifneq '$(OS)' 'Windows_NT'
 	.PHONY: install uninstall
 	install: release
 		install -m 755 $(BIN) $(INSTALLPATH)
-
 	uninstall:
 		rm -f $(INSTALLPATH)
 endif

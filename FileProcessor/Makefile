@@ -16,7 +16,7 @@ RELEASELDFLAGS:=
 ifeq '$(OS)' 'Windows_NT'
 	BIN:=$(BIN).exe
 endif
-.PHONY: all debug release dirs clean
+.PHONY: all debug release dep dirs clean
 all: CFLAGS+=$(DEBUGCFLAGS)
 all: LDFLAGS+=$(DEBUGLDFLAGS)
 all: $(BIN)
@@ -30,6 +30,8 @@ $(BIN): $(OBJS)
 	$(C) $(OBJS) -o $@ $(LDFLAGS)
 $(OBJDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	$(C) -c $< -o $@ -MMD $(CFLAGS)
+dep: release
+	mv ./$(BIN) ../$(BIN)
 dirs:
 	mkdir -p $(OBJDIR) $(dir $(BIN))
 clean:
@@ -39,7 +41,6 @@ ifneq '$(OS)' 'Windows_NT'
 	.PHONY: install uninstall
 	install: release
 		install -m 755 $(BIN) $(INSTALLPATH)
-
 	uninstall:
 		rm -f $(INSTALLPATH)
 endif
