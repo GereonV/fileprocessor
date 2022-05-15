@@ -20,10 +20,14 @@ To use any of these Programs locally you will need to clone this Repository and 
 
 ### Prerequisites
 
-In order to use the Makefiles provided in this Repository need to have ***make*** installed.
+In order to use the Makefiles provided in this Repository need to have the following installed:
+
+- **gcc**
+- **make**
 
 Check by running:
 ```sh
+gcc --version
 make --version
 ```
 
