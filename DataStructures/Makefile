@@ -8,7 +8,7 @@ CFLAGS:=-std=c11 -Wpedantic -Wall
 DEBUGCFLAGS:=-g -D _DEBUG
 RELEASECFLAGS:=-O2
 
-.PHONY: all debug release dep dirs clean
+.PHONY: all debug release test dep dirs clean
 all: CFLAGS+=$(DEBUGCFLAGS)
 all: LDFLAGS+=$(DEBUGLDFLAGS)
 all: $(LIB)
@@ -18,6 +18,10 @@ release: LDFLAGS+=$(RELEASELDFLAGS)
 release: dirs $(LIB)
 OBJS:=$(patsubst $(SRCDIR)/%.$(SRCEXT),$(OBJDIR)/%.o,$(wildcard $(SRCDIR)/*.$(SRCEXT)))
 -include $(OBJS:%.o=%.d)
+test: $(LIB)
+	$(C) test/main.c -I$(SRCDIR) -L$(dir $(LIB)) -lds
+	./a
+	rm ./a
 $(LIB): $(OBJS)
 	ar -cr $(LIB) $(OBJS)
 $(OBJDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
