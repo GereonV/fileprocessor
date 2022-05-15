@@ -112,7 +112,7 @@ static void outputFormatted(const char *const name, char *const buffer, FILE *co
     size_t inNewLineLength = strlen(inNewLine);
     fprintf(outFile, "#define %s", name);
     char *line = buffer, *lineEnd;
-    while(lineEnd = strstr(line, inNewLine)) {
+    while((lineEnd = strstr(line, inNewLine))) {
         *lineEnd = 0;
         fprintf(outFile, " \\\n\"%s\\n\"", line);
         line = lineEnd + inNewLineLength;
