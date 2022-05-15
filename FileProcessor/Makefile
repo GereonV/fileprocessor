@@ -4,7 +4,7 @@ SRCDIR:=src
 OBJDIR:=obj
 BIN:=fileprocessor
 
-CFLAGS:=
+CFLAGS:=-std=c11 -Wpedantic -Wall
 LDFLAGS:=
 
 DEBUGCFLAGS:=-g -D _DEBUG

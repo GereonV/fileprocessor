@@ -2,7 +2,7 @@ TARGETS:=FileProcessor MakeMake
 
 .PHONY: all clean
 all:
-	mkdir deps
+	mkdir -p deps
 	$(foreach dir,$(TARGETS),"$(MAKE)" -C $(dir) dep;)
 clean:
 	$(foreach dir,$(TARGETS),"$(MAKE)" -C $(dir) clean;)

@@ -5,7 +5,7 @@ OBJDIR:=obj
 BIN:=makemake
 FP:=../deps/fileprocessor # path to executable
 
-CFLAGS:=
+CFLAGS:=-std=c11 -Wpedantic -Wall
 LDFLAGS:=
 
 DEBUGCFLAGS:=-g -D _DEBUG
