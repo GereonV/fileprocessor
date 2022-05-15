@@ -34,7 +34,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 src/template.h: Template.mk
 	$(FP) -O$@ $<
 dep: release
-	mv ./$(BIN) ../deps/$(BIN)
+	mv ./$(BIN) ../deps/bin/
 dirs:
 	mkdir -p $(OBJDIR) $(dir $(BIN))
 clean:

@@ -1,8 +1,8 @@
-TARGETS:=FileProcessor MakeMake
+TARGETS:=DataStructures FileProcessor MakeMake
 
 .PHONY: all clean
 all:
-	mkdir -p deps
+	mkdir -p deps/bin deps/lib/include
 	$(foreach dir,$(TARGETS),"$(MAKE)" -C $(dir) dep;)
 clean:
 	$(foreach dir,$(TARGETS),"$(MAKE)" -C $(dir) clean;)
