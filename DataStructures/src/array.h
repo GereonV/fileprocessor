@@ -3,30 +3,35 @@
 #define _DS_ARRAY_H_
 
 #include <stddef.h>
+#include "range.h"
 
 typedef struct ds_array ds_array;
 
-ds_array dsArrayCreate(size_t cap, size_t valueSize);
-ds_array dsArrayCreateVal(size_t count, size_t valueSize, void const * value);
-ds_array dsArrayCreateAlloc(size_t count, size_t valueSize, void (*alloc)(void *));
-
-ds_array dsArrayCreateCopy(ds_array const * src);
-ds_array dsArrayCreateFrom(ds_array const * src, size_t valueSize, void (*alloc)(void *, void const *));
-
+ds_array * dsArray(size_t typeSize, size_t cap);
+ds_array * dsArrayCopy(ds_array const * src);
 void dsArrayDelete(ds_array * arr);
-void dsArrayDeleteDealloc(ds_array * arr, void (*dealloc)(void *));
 
 void * dsArrayAt(ds_array const * arr, size_t pos);
-void * dsArrayFront(ds_array const * arr);
+void * dsArrayData(ds_array const * arr);
 void * dsArrayBack(ds_array const * arr);
+void * dsArrayEnd(ds_array const * arr);
 
 size_t dsArraySize(ds_array const * arr);
 size_t dsArrayCapacity(ds_array const * arr);
 void dsArrayResize(ds_array * arr, size_t cap);
-
 void dsArrayClear(ds_array * arr);
-void dsArrayClearOp(ds_array * arr, void (*dealloc)(void *));
-void * dsArrayInsert(ds_array * arr, size_t pos, size_t count);
-void * dsPushBack(ds_array * arr, size_t count);
 
+void * dsArrayInsert(ds_array * arr, size_t pos);
+void dsArrayErase(ds_array * arr, size_t pos);
+void * dsArrayPushBack(ds_array * arr);
+void dsArrayPopBack(ds_array * arr);
+
+ds_range dsArrayRange(ds_array const * arr);
+ds_range dsArraySlice(ds_array const * arr, size_t pos, size_t count);
+ds_range dsArrayInsertRange(ds_array * arr, size_t pos, size_t count);
+void dsArrayEraseRange(ds_array * arr, size_t pos, size_t count);
+
+#define dsIterArray(T, it, arr) \
+    ds_range it ## _range_ = dsArrayRange(arr); \
+    dsIterRange(T, it, it ## _range_)
 #endif // _DS_ARRAY_H_

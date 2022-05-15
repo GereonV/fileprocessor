@@ -3,69 +3,49 @@
 #include "array.h"
 
 struct ds_array {
-    size_t const valueSize;
-    size_t size, capacity;
+    size_t typeSize, size, capacity;
     unsigned char * data;
 };
 
-static inline ds_array dsArrayInit(size_t const valueSize, size_t const size, size_t const capacity) {
-    ds_array arr = { .valueSize = valueSize, .size = size, .capacity = capacity };
-    arr.data = malloc(capacity * valueSize);
+static inline ds_array * dsArrayInit(size_t const typeSize, size_t const size, size_t const capacity) {
+    ds_array * const arr = malloc(sizeof(ds_array));
+    *arr = (ds_array) { .typeSize = typeSize, .size = size, .capacity = capacity, .data = malloc(capacity * typeSize) };
     return arr;
 }
 
-inline ds_array dsArrayCreate(size_t const cap, size_t const valueSize) {
-    return dsArrayInit(valueSize, 0, cap);
+static inline void * dsArrayPos(ds_array const * const arr, size_t const pos) {
+    return arr->data + pos * arr->typeSize;
 }
 
-ds_array dsArrayCreateVal(size_t const count, size_t const valueSize, void const * restrict const value) {
-    ds_array arr = dsArrayInit(valueSize, count, count);
-    for(size_t i = 0; i < count; i++)
-        memcpy(arr.data + i * valueSize, value, valueSize);
-    return arr;
+inline ds_array * dsArray(size_t const typeSize, size_t const cap) {
+    return dsArrayInit(typeSize, cap, cap);
 }
 
-ds_array dsArrayCreateAlloc(size_t const count, size_t const valueSize, void (*alloc)(void *)) {
-    ds_array arr = dsArrayInit(valueSize, count, count);
-    for(size_t i = 0; i < count; i++)
-        alloc(arr.data + i * valueSize);
-    return arr;
-}
-
-inline ds_array dsArrayCreateCopy(ds_array const * const src) {
-    ds_array arr = dsArrayInit(src->valueSize, src->size, src->size);
-    memcpy(arr.data, src->data, arr.size * arr.valueSize);
-    return arr;
-}
-
-ds_array dsArrayCreateFrom(ds_array const * const src, size_t const valueSize, void (*alloc)(void *, void const *)) {
-    ds_array arr = dsArrayInit(valueSize, src->size, src->size);
-    for(size_t i = 0; i < arr.size; i++)
-        alloc(arr.data + i * valueSize, src->data + i * src->valueSize);
+inline ds_array * dsArrayCopy(ds_array const * const src) {
+    ds_array * const arr = dsArrayInit(src->typeSize, src->size, src->size);
+    memcpy(arr->data, src->data, arr->size * arr->typeSize);
     return arr;
 }
 
 inline void dsArrayDelete(ds_array * const arr) {
     free(arr->data);
-    arr->size = arr->capacity = 0;
-    arr->data = 0;
-}
-
-inline void dsArrayDeleteDealloc(ds_array * const arr, void (*dealloc)(void *)) {
-    dsArrayClearOp(arr, dealloc);
-    dsArrayDelete(arr);
+    free(arr);
 }
 
 inline void * dsArrayAt(ds_array const * const arr, size_t const pos) {
-    return pos < arr->size ? arr->data + pos * arr->valueSize : 0;
+    return pos < arr->size ? dsArrayPos(arr, pos) : 0;
 }
 
-inline void * dsArrayFront(ds_array const * const arr) {
+inline void * dsArrayData(ds_array const * const arr) {
     return arr->data;
 }
 
 inline void * dsArrayBack(ds_array const * const arr) {
-    return arr->data + arr->size * arr->valueSize;
+    return dsArrayPos(arr, arr->size - 1);
+}
+
+inline void * dsArrayEnd(ds_array const * const arr) {
+    return dsArrayPos(arr, arr->size);
 }
 
 inline size_t dsArraySize(ds_array const * const arr) {
@@ -77,9 +57,8 @@ inline size_t dsArrayCapacity(ds_array const * const arr) {
 }
 
 inline void dsArrayResize(ds_array * const arr, size_t const cap) {
-    arr->data = realloc(arr->data, cap * arr->valueSize);
-    arr->capacity = cap;
-    if(cap < arr->size)
+    arr->data = realloc(arr->data, (arr->capacity = cap) * arr->typeSize);
+    if(arr->size > cap)
         arr->size = cap;
 }
 
@@ -87,35 +66,50 @@ inline void dsArrayClear(ds_array * const arr) {
     arr->size = 0;
 }
 
-void dsArrayClearOp(ds_array * const arr, void (*dealloc)(void *)) {
-    for(size_t i = 0; i < arr->size; i++)
-        dealloc(arr->data + i * arr->valueSize);
-    dsArrayClear(arr);
+inline void * dsArrayInsert(ds_array * const arr, size_t const pos) {
+    return dsArrayInsertRange(arr, pos, 1).begin;
 }
 
-void * dsArrayInsert(ds_array * const arr, size_t const pos, size_t const count) {
+inline void dsArrayErase(ds_array * const arr, size_t const pos) {
+    dsArrayEraseRange(arr, pos, 1);
+}
+
+inline void * dsArrayPushBack(ds_array * const arr) {
+    if(arr->size == arr->capacity)
+        arr->data = realloc(arr->data, (arr->capacity <<= 1) * arr->typeSize);
+    return dsArrayPos(arr, arr->size++);
+}
+
+inline void dsArrayPopBack(ds_array * const arr) {
+    arr->size--;
+}
+
+inline ds_range dsArrayRange(ds_array const * const arr) {
+    return (ds_range) { .begin = dsArrayData(arr), .end = dsArrayEnd(arr) };
+}
+
+inline ds_range dsArraySlice(ds_array const * const arr, size_t const pos, size_t const count) {
+    return (ds_range) { .begin = dsArrayPos(arr, pos), .end = dsArrayPos(arr, pos + count) };
+}
+
+ds_range dsArrayInsertRange(ds_array * const arr, size_t const pos, size_t const count) {
     if(pos > arr->size)
-        return 0;
-    size_t const    firstSize = pos * arr->valueSize,
-                    secondOffset = (pos + count) * arr->valueSize,
-                    secondSize = (arr->size - pos) * arr->valueSize;
-    unsigned char * const secondSrc = arr->data + firstSize;
+        return (ds_range) { .begin = 0, .end = 0 };
     arr->size += count;
-    if(arr->size <= arr->capacity) {
-        memmove(arr->data + secondOffset, secondSrc, secondSize);
-        return secondSrc;
-    }
-    unsigned char * buffer = malloc((arr->capacity = arr->size << 1) * arr->valueSize);
-    memcpy(buffer, arr->data, firstSize);
-    memcpy(buffer + secondOffset, secondSrc, secondSize);
-    free(arr->data);
-    return (arr->data = buffer) + firstSize;
+    size_t const secondSize = (arr->size - pos) * arr->typeSize;
+    void * const secondSrc = dsArrayPos(arr, pos);
+    if(arr->size > arr->capacity) {
+        unsigned char * const buffer = malloc((arr->capacity = arr->size << 1) * arr->typeSize);
+        memcpy(buffer, arr->data, pos * arr->typeSize);
+        memcpy(buffer + (pos + count) * arr->typeSize, secondSrc, (arr->size - pos) * arr->typeSize);
+        free(arr->data);
+        arr->data = buffer;
+    } else
+        memmove(dsArrayPos(arr, pos + count), secondSrc, secondSize);
+    return dsArraySlice(arr, pos, count);
 }
 
-inline void * dsPushBack(ds_array * const arr, size_t const count) {
-    size_t const offset = arr->size * arr->valueSize;
-    arr->size += count;
-    if(arr->size > arr->capacity)
-        arr->data = realloc(arr->data, (arr->capacity = arr->size <<  1) * arr->valueSize);
-    return arr->data + offset;
+inline void dsArrayEraseRange(ds_array * const arr, size_t const pos, size_t const count) {
+    memmove(dsArrayPos(arr, pos), dsArrayPos(arr, pos + count), (arr->size - pos - count) * arr->typeSize);
+    arr->size -= count;
 }
