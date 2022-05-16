@@ -7,7 +7,7 @@
 
 typedef struct ds_array ds_array;
 
-ds_array * dsArray(size_t typeSize, size_t cap);
+ds_array * dsArray(size_t typeSize, size_t size);
 ds_array * dsArrayCopy(ds_array const * src);
 void dsArrayDelete(ds_array * arr);
 
@@ -19,8 +19,8 @@ void * dsArrayEnd(ds_array const * arr);
 size_t dsArraySize(ds_array const * arr);
 size_t dsArrayCapacity(ds_array const * arr);
 void dsArrayResize(ds_array * arr, size_t cap);
-void dsArrayClear(ds_array * arr);
 
+void dsArrayClear(ds_array * arr);
 void * dsArrayInsert(ds_array * arr, size_t pos);
 void dsArrayErase(ds_array * arr, size_t pos);
 void * dsArrayPushBack(ds_array * arr);
@@ -31,7 +31,4 @@ ds_range dsArraySlice(ds_array const * arr, size_t pos, size_t count);
 ds_range dsArrayInsertRange(ds_array * arr, size_t pos, size_t count);
 void dsArrayEraseRange(ds_array * arr, size_t pos, size_t count);
 
-#define dsIterArray(T, it, arr) \
-    ds_range it ## _range_ = dsArrayRange(arr); \
-    dsIterRange(T, it, it ## _range_)
 #endif // _DS_ARRAY_H_

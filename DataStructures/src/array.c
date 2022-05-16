@@ -17,8 +17,8 @@ static inline void * dsArrayPos(ds_array const * const arr, size_t const pos) {
     return arr->data + pos * arr->typeSize;
 }
 
-inline ds_array * dsArray(size_t const typeSize, size_t const cap) {
-    return dsArrayInit(typeSize, cap, cap);
+inline ds_array * dsArray(size_t const typeSize, size_t const size) {
+    return dsArrayInit(typeSize, size, size);
 }
 
 inline ds_array * dsArrayCopy(ds_array const * const src) {
