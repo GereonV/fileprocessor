@@ -132,14 +132,13 @@ inline void dsListPopBack(ds_list * const list) {
 void dsListReverse(ds_list * const list) {
     if(!list->size)
         return;
-    list->front->prev = list->end;
-    list->end->prev->next = 0;
-    *list->end = (element) { .next = list->front, .prev = 0 };
-    element * temp;
-    for(element * iter = list->end; iter; iter = iter->prev) {
-        temp = iter->prev;
+    for(element * iter = list->front; iter; iter = iter->prev) {
+        element * const temp = iter->prev;
         iter->prev = iter->next;
         iter->next = temp;
     }
-    list->front = temp->prev;
+    list->end->prev = list->front;
+    list->front->next = list->end;
+    list->front = list->end->next;
+    list->front->prev = list->end->next = 0;
 }
