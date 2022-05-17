@@ -32,5 +32,7 @@ void dsListReverse(ds_list * list);
 
 #define dsIterList(it, list) \
     for(void * it = dsListFront(list); it != dsListEnd(list); it = dsListNext(it))
+#define dsIterListR(it, list) \
+    for(void * it = dsListBack(list); it; it = dsListPrev(it))
 
 #endif // _DS_LIST_H_

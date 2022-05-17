@@ -8,5 +8,7 @@ typedef struct {
 
 #define dsIterRange(T, it, range) \
     for(T * it = range.begin; it != range.end; it++)
+#define dsIterRangeR(T, it, range) \
+    for(T * it = range.end; it-- != range.begin;)
 
 #endif // _DS_RANGE_H_
