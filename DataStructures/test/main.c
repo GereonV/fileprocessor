@@ -28,23 +28,23 @@ static void array() {
 
 static void list() {
     ds_list * list = dsList(sizeof(int));
-    *(int *) dsListAt(dsListPushFront(list)) = 69;
-    *(int *) dsListAt(dsListPushFront(list)) = 42;
-    *(int *) dsListAt(dsListPushBack(list)) = 42;
-    *(int *) dsListAt(dsListInsert(list, dsListNext(dsListNext(dsListFront(list))))) = 420;
+    *(int *) dsListData(dsListPushFront(list)) = 69;
+    *(int *) dsListData(dsListPushFront(list)) = 42;
+    *(int *) dsListData(dsListPushBack(list)) = 42;
+    *(int *) dsListData(dsListInsert(list, dsListAt(list, 3))) = 420;
     dsListPopFront(list);
     dsListPopBack(list);
-    *(int *) dsListAt(dsListInsert(list, dsListNext(dsListFront(list)))) = 42;
+    *(int *) dsListData(dsListInsert(list, dsListNext(dsListFront(list)))) = 42;
     dsListErase(list, dsListNext(dsListFront(list)));
     dsListClear(list);
-    *(int *) dsListAt(dsListPushBack(list)) = 36;
-    *(int *) dsListAt(dsListPushBack(list)) = 72;
+    *(int *) dsListData(dsListPushBack(list)) = 36;
+    *(int *) dsListData(dsListPushBack(list)) = 72;
     ds_list * list2 = dsListCopy(list);
     dsListDelete(list);
     list = list2;
     dsListReverse(list);
     dsIterList(ptr, list)
-        printf("%d\n", *(int *) dsListAt(ptr));
+        printf("%d\n", *(int *) dsListData(ptr));
 }
 
 int main() {

@@ -23,7 +23,7 @@ inline ds_list * dsList(size_t const typeSize) {
 ds_list * dsListCopy(ds_list const * const src) {
     ds_list * list = dsList(src->typeSize);
     for(element const * iter = src->front; iter->next; iter = iter->next)
-        memcpy(dsListAt(dsListPushBack(list)), dsListAt(iter), list->typeSize);
+        memcpy(dsListData(dsListPushBack(list)), dsListData(iter), list->typeSize);
     return list;
 }
 
@@ -32,7 +32,16 @@ inline void dsListDelete(ds_list * const list) {
     free(list);
 }
 
-inline void * dsListAt(void const * const pos) {
+inline void * dsListAt(ds_list const * const list, size_t pos) {
+    if(pos > list->size)
+        return 0;
+    element * iter = list->front;
+    while(pos--)
+        iter = iter->next;
+    return iter;
+}
+
+inline void * dsListData(void const * const pos) {
     return (element *) pos + 1;
 }
 
@@ -123,8 +132,9 @@ inline void dsListPopBack(ds_list * const list) {
 void dsListReverse(ds_list * const list) {
     if(!list->size)
         return;
-    list->end->next = list->end->prev;
-    list->end->prev = list->end->prev->next = 0;
+    list->front->prev = list->end;
+    list->end->prev->next = 0;
+    *list->end = (element) { .next = list->front, .prev = 0 };
     element * temp;
     for(element * iter = list->end; iter; iter = iter->prev) {
         temp = iter->prev;

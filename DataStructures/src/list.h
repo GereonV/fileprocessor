@@ -10,7 +10,8 @@ ds_list * dsList(size_t typeSize);
 ds_list * dsListCopy(ds_list const * src);
 void dsListDelete(ds_list * list);
 
-void * dsListAt(void const * pos);
+void * dsListAt(ds_list const * list, size_t pos);
+void * dsListData(void const * pos);
 void * dsListNext(void const * pos);
 void * dsListPrev(void const * pos);
 void * dsListFront(ds_list const * list);
