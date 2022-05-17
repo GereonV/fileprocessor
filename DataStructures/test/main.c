@@ -24,6 +24,7 @@ static void array() {
     range = dsArrayRange(arr);
     dsIterRange(int, ptr, range)
         printf("%d\n", *ptr);
+    dsArrayDelete(arr);
 }
 
 static void list() {
@@ -40,13 +41,16 @@ static void list() {
     *(int *) dsListData(dsListPushBack(list)) = 36;
     *(int *) dsListData(dsListPushBack(list)) = 72;
     ds_list * list2 = dsListCopy(list);
-    dsListDelete(list);
-    list = list2;
-    dsListReverse(list);
     dsIterList(ptr, list)
         printf("%d\n", *(int *) dsListData(ptr));
+    dsListReverse(list2);
+    dsIterListR(ptr, list2)
+        printf("%d\n", *(int *) dsListData(ptr));
+    dsListDelete(list);
+    dsListDelete(list2);
 }
 
 int main() {
+    array();
     list();
 }
