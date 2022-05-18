@@ -27,6 +27,14 @@ inline ds_array * dsArrayCopy(ds_array const * const src) {
     return arr;
 }
 
+inline ds_array * dsArrayCopyRange(size_t const typeSize, ds_range const * const range) {
+    size_t const bytes = (unsigned char *) range->end - (unsigned char *) range->begin;
+    size_t const size = bytes / typeSize;
+    ds_array * const arr = dsArrayInit(typeSize, size, size);
+    memcpy(arr->data, range->begin, bytes);
+    return arr;
+}
+
 inline void dsArrayDelete(ds_array * const arr) {
     free(arr->data);
     free(arr);
