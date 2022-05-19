@@ -1,6 +1,8 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include "array.h"
 #include "list.h"
+#include "heap.h"
 
 static void array() {
     ds_array * arr = dsArray(sizeof(int), 4);
@@ -50,7 +52,48 @@ static void list() {
     dsListDelete(list2);
 }
 
+static inline _Bool cmp(void const * const a, void const * const b) {
+    return *(int *) a < *(int *) b;
+}
+
+static void heap() {
+    static const size_t SIZE = 10;
+    ds_array * arr = dsArray(sizeof(int), SIZE);
+    ds_range range = dsArrayRange(arr);
+    dsIterRange(int, ptr, range)
+        *ptr = (int) rand();
+    ds_heap heap = { .typeSize = sizeof(int), .range = range, .cmp = &cmp };
+    dsIterRange(int, ptr, heap.range)
+        printf("%d, ", *ptr);
+    printf("\n");
+    dsHeapMake(&heap);
+    dsIterRange(int, ptr, heap.range)
+        printf("%d, ", *ptr);
+    printf("\n");
+    dsHeapPop(&heap);
+    printf("%d\n", *(int *) dsArrayBack(arr));
+    dsArrayPopBack(arr);
+    heap.range = dsArrayRange(arr);
+    dsIterRange(int, ptr, heap.range)
+        printf("%d, ", *ptr);
+    printf("\n");
+    *(int *) dsArrayPushBack(arr) = rand();
+    heap.range = dsArrayRange(arr);
+    dsHeapPush(&heap);
+    *(int *) dsArrayPushBack(arr) = rand();
+    heap.range = dsArrayRange(arr);
+    dsHeapPush(&heap);
+    dsIterRange(int, ptr, heap.range)
+        printf("%d, ", *ptr);
+    printf("\n");
+    dsHeapSort(&heap);
+    dsIterRange(int, ptr, heap.range)
+        printf("%d, ", *ptr);
+    printf("\n");
+}
+
 int main() {
-    array();
-    list();
+    //array();
+    //list();
+    //heap();
 }
