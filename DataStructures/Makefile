@@ -19,7 +19,7 @@ release: dirs $(LIB)
 OBJS:=$(patsubst $(SRCDIR)/%.$(SRCEXT),$(OBJDIR)/%.o,$(wildcard $(SRCDIR)/*.$(SRCEXT)))
 -include $(OBJS:%.o=%.d)
 test: $(LIB)
-	$(C) test/main.c -I$(SRCDIR) -L$(dir $(LIB)) -lds
+	$(C) test/main.c -I$(SRCDIR) -L$(dir $(LIB)) -lds -g
 	./a
 	rm ./a
 $(LIB): $(OBJS)
