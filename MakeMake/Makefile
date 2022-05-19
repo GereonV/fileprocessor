@@ -3,7 +3,7 @@ SRCEXT:=c
 SRCDIR:=src
 OBJDIR:=obj
 BIN:=makemake
-FP:=../deps/fileprocessor # path to executable
+FP:=../deps/bin/fileprocessor # path to executable
 
 CFLAGS:=-std=c11 -Wpedantic -Wall
 LDFLAGS:=
