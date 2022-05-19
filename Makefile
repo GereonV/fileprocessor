@@ -1,13 +1,13 @@
 TARGETS:=DataStructures FileProcessor MakeMake
 
-.PHONY: all clean
+.PHONY: all clean reset
 all:
 	mkdir -p deps/bin deps/lib/include
 	$(foreach dir,$(TARGETS),"$(MAKE)" -C $(dir) dep;)
 clean:
 	$(foreach dir,$(TARGETS),"$(MAKE)" -C $(dir) clean;)
 reset: clean
-	rm -rf deps MakeMake/src/template.h
+	rm -rf deps
 ifneq '$(OS)' 'Windows_NT'
 	.PHONY: install uninstall
 	install: all

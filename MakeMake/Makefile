@@ -38,7 +38,7 @@ dep: release
 dirs:
 	mkdir -p $(OBJDIR) $(dir $(BIN))
 clean:
-	rm -rf $(OBJDIR) $(BIN)
+	rm -rf $(OBJDIR) $(BIN) src/template.h
 ifneq '$(OS)' 'Windows_NT'
 	INSTALLPATH=/usr/local/bin/$(notdir $(BIN))
 	.PHONY: install uninstall
