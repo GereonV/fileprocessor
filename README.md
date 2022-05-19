@@ -42,7 +42,7 @@ make --version
     ```sh
     make
     ```
-1. **Congratulations!** All executables should now be in the Projects root-directory.
+1. **Congratulations!** All created files should now be in the *deps/* directory.
 
     Alternatively on Linux you can use `make install` to directly put them into */usr/local/bin/*
 
