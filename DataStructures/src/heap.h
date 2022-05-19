@@ -6,12 +6,10 @@
 #include "range.h"
 #include "array.h"
 
-typedef _Bool (* CMP)(void const *, void const *);
-
 typedef struct {
     size_t typeSize;
     ds_range range;
-    CMP cmp;
+    _Bool (*cmp)(void const *, void const *);
 } ds_heap;
 
 void dsHeapMake(ds_heap const * heap);
