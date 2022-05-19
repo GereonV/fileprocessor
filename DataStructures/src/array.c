@@ -7,9 +7,9 @@ struct ds_array {
     unsigned char * data;
 };
 
-static inline ds_array * dsArrayInit(size_t const typeSize, size_t const size, size_t const capacity) {
+static inline ds_array * dsArrayInit(size_t const typeSize, size_t const size, size_t const capacity, void * const data) {
     ds_array * const arr = malloc(sizeof(ds_array));
-    *arr = (ds_array) { .typeSize = typeSize, .size = size, .capacity = capacity, .data = malloc(capacity * typeSize) };
+    *arr = (ds_array) { .typeSize = typeSize, .size = size, .capacity = capacity, .data = data };
     return arr;
 }
 
@@ -17,20 +17,21 @@ static inline void * dsArrayPos(ds_array const * const arr, size_t const pos) {
     return arr->data + pos * arr->typeSize;
 }
 
-inline ds_array * dsArray(size_t const typeSize, size_t const size) {
-    return dsArrayInit(typeSize, size, size);
+inline ds_array * dsArray(size_t const typeSize) {
+    return dsArrayInit(typeSize, 0, 0, 0);
 }
 
 inline ds_array * dsArrayCopy(ds_array const * const src) {
-    ds_array * const arr = dsArrayInit(src->typeSize, src->size, src->size);
-    memcpy(arr->data, src->data, arr->size * arr->typeSize);
+    size_t const bytes = src->size * src->typeSize;
+    ds_array * const arr = dsArrayInit(src->typeSize, src->size, src->size, malloc(bytes));
+    memcpy(arr->data, src->data, bytes);
     return arr;
 }
 
 inline ds_array * dsArrayCopyRange(size_t const typeSize, ds_range const * const range) {
     size_t const bytes = (unsigned char *) range->end - (unsigned char *) range->begin;
     size_t const size = bytes / typeSize;
-    ds_array * const arr = dsArrayInit(typeSize, size, size);
+    ds_array * const arr = dsArrayInit(typeSize, size, size, malloc(bytes));
     memcpy(arr->data, range->begin, bytes);
     return arr;
 }

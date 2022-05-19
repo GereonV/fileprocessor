@@ -7,7 +7,7 @@
 
 typedef struct ds_array ds_array;
 
-ds_array * dsArray(size_t typeSize, size_t size);
+ds_array * dsArray(size_t typeSize);
 ds_array * dsArrayCopy(ds_array const * src);
 ds_array * dsArrayCopyRange(size_t typeSize, ds_range const * range);
 void dsArrayDelete(ds_array * arr);

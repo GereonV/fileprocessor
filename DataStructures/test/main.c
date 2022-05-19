@@ -5,17 +5,17 @@
 #include "heap.h"
 
 static void array() {
-    ds_array * arr = dsArray(sizeof(int), 4);
-    ds_range range = dsArrayRange(arr);
-    dsIterRange(int, ptr, range)
-        *ptr = 42;
+    ds_array * arr = dsArray(sizeof(int));
+    dsArrayResize(arr, 4);
+    for(size_t i = 0; i < 4; i++)
+        *(int *) dsArrayPushBack(arr) = 42;
     *(int *) dsArrayAt(arr, 1) = 69;
     *(int *) dsArrayInsert(arr, 3) = 420;
     *(int *) dsArrayPushBack(arr) = 36;
     ds_array * arr2 = dsArrayCopy(arr);
     dsArrayDelete(arr);
     arr = arr2;
-    range = dsArrayInsertRange(arr, 0, 4);
+    ds_range range = dsArrayInsertRange(arr, 0, 4);
     dsIterRange(int, ptr, range)
         *ptr = -1;
     dsArrayEraseRange(arr, 4, 6);
@@ -57,11 +57,11 @@ static inline _Bool cmp(void const * const a, void const * const b) {
 }
 
 static void heap() {
-    static const size_t SIZE = 10;
-    ds_array * arr = dsArray(sizeof(int), SIZE);
+    ds_array * arr = dsArray(sizeof(int));
+    dsArrayResize(arr, 10);
+    for(size_t i = 0; i < 10; i++)
+        *(int *) dsArrayPushBack(arr) = (int) rand();
     ds_range range = dsArrayRange(arr);
-    dsIterRange(int, ptr, range)
-        *ptr = (int) rand();
     ds_heap heap = { .typeSize = sizeof(int), .range = range, .cmp = &cmp };
     dsIterRange(int, ptr, heap.range)
         printf("%d, ", *ptr);
