@@ -109,7 +109,7 @@ static inline STATE checkState() {
 
 static void outputFormatted(const char *const name, char *const buffer, FILE *const outFile) {
     const char *inNewLine = strchr(buffer, '\r') ? "\r\n" : "\n";
-    size_t inNewLineLength = strlen(inNewLine);
+    const size_t inNewLineLength = strlen(inNewLine);
     fprintf(outFile, "#define %s", name);
     char *line = buffer, *lineEnd;
     while((lineEnd = strstr(line, inNewLine))) {
