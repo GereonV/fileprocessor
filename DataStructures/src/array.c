@@ -110,7 +110,7 @@ ds_range dsArrayInsertRange(ds_array * const arr, size_t const pos, size_t const
     if(arr->size > arr->capacity) {
         unsigned char * const buffer = malloc((arr->capacity = arr->size << 1) * arr->typeSize);
         memcpy(buffer, arr->data, pos * arr->typeSize);
-        memcpy(buffer + (pos + count) * arr->typeSize, secondSrc, (arr->size - pos) * arr->typeSize);
+        memcpy(buffer + (pos + count) * arr->typeSize, secondSrc, secondSize);
         free(arr->data);
         arr->data = buffer;
     } else
