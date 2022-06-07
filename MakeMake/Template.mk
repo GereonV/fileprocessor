@@ -4,13 +4,13 @@ SRCDIR:=src
 OBJDIR:=obj
 BIN:=program
 
-CFLAGS:=
+CFLAGS:=-Wpedantic -Wall -Wextra -Wconversion
 LDFLAGS:=
 
 DEBUGCFLAGS:=-g -D _DEBUG
 DEBUGLDFLAGS:=-g
 
-RELEASECFLAGS:=-O2
+RELEASECFLAGS:=-O3
 RELEASELDFLAGS:=
 
 ifeq '$(OS)' 'Windows_NT'
