@@ -13,9 +13,6 @@ DEBUGLDFLAGS:=-g
 RELEASECFLAGS:=-O3
 RELEASELDFLAGS:=
 
-ifeq '$(OS)' 'Windows_NT'
-	BIN:=$(BIN).exe
-endif
 .PHONY: all debug release dirs clean
 all: CFLAGS+=$(DEBUGCFLAGS)
 all: LDFLAGS+=$(DEBUGLDFLAGS)
