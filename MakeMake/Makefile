@@ -4,19 +4,19 @@ SRCDIR:=src
 OBJDIR:=obj
 BIN:=makemake
 FP:=../deps/bin/fileprocessor # path to executable
+ifeq '$(OS)' 'Windows_NT'
+BIN:=$(BIN).exe
+endif
 
-CFLAGS:=-std=c11 -Wpedantic -Wall
+CFLAGS:=-std=c11 -Wpedantic -Wall -Wextra -Wconversion
 LDFLAGS:=
 
 DEBUGCFLAGS:=-g -D _DEBUG
 DEBUGLDFLAGS:=-g
 
-RELEASECFLAGS:=-O2
+RELEASECFLAGS:=-O3
 RELEASELDFLAGS:=
 
-ifeq '$(OS)' 'Windows_NT'
-	BIN:=$(BIN).exe
-endif
 .PHONY: all debug release dep dirs clean
 all: CFLAGS+=$(DEBUGCFLAGS)
 all: LDFLAGS+=$(DEBUGLDFLAGS)
@@ -39,11 +39,12 @@ dirs:
 	mkdir -p $(OBJDIR) $(dir $(BIN))
 clean:
 	rm -rf $(OBJDIR) $(BIN) src/template.h
+
 ifneq '$(OS)' 'Windows_NT'
-	INSTALLPATH=/usr/local/bin/$(notdir $(BIN))
-	.PHONY: install uninstall
-	install: release
-		install -m 755 $(BIN) $(INSTALLPATH)
-	uninstall:
-		rm -f $(INSTALLPATH)
+INSTALLPATH=/usr/local/bin/$(notdir $(BIN))
+.PHONY: install uninstall
+install: release
+	install -m 755 $(BIN) $(INSTALLPATH)
+uninstall:
+	rm -f $(INSTALLPATH)
 endif

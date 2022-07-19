@@ -3,6 +3,9 @@ SRCEXT:=%s
 SRCDIR:=src
 OBJDIR:=obj
 BIN:=program
+ifeq '$(OS)' 'Windows_NT'
+BIN:=$(BIN).exe
+endif
 
 CFLAGS:=-Wpedantic -Wall -Wextra -Wconversion
 LDFLAGS:=
@@ -32,10 +35,10 @@ dirs:
 clean:
 	rm -rf $(OBJDIR) $(BIN)
 ifneq '$(OS)' 'Windows_NT'
-	INSTALLPATH=/usr/local/bin/$(notdir $(BIN))
-	.PHONY: install uninstall
-	install: release
-		install -m 755 $(BIN) $(INSTALLPATH)
-	uninstall:
-		rm -f $(INSTALLPATH)
+INSTALLPATH=/usr/local/bin/$(notdir $(BIN))
+.PHONY: install uninstall
+install: release
+	install -m 755 $(BIN) $(INSTALLPATH)
+uninstall:
+	rm -f $(INSTALLPATH)
 endif
