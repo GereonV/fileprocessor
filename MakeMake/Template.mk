@@ -2,7 +2,7 @@ C:=%s
 SRCEXT:=%s
 SRCDIR:=src
 OBJDIR:=obj
-BIN:=program
+BIN:=bin/program
 ifeq '$(OS)' 'Windows_NT'
 BIN:=$(BIN).exe
 endif
@@ -16,11 +16,10 @@ DEBUGLDFLAGS:=-g
 RELEASECFLAGS:=-O3
 RELEASELDFLAGS:=
 
-.PHONY: all debug release dirs clean
-all: CFLAGS+=$(DEBUGCFLAGS)
-all: LDFLAGS+=$(DEBUGLDFLAGS)
-all: $(BIN)
-debug: dirs all
+.PHONY: debug release dirs clean
+debug: CFLAGS+=$(DEBUGCFLAGS)
+debug: LDFLAGS+=$(DEBUGLDFLAGS)
+debug: $(BIN)
 release: CFLAGS+=$(RELEASECFLAGS)
 release: LDFLAGS+=$(RELEASELDFLAGS)
 release: dirs $(BIN)
