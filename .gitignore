@@ -1,8 +1,2 @@
-*
-!*.*
-!*/
-*.exe
-*.a
-*/obj/
-deps/
-!*/Makefile
+/obj/
+/bin/

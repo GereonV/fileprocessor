@@ -1,17 +1,44 @@
-TARGETS:=FileProcessor MakeMake
+C:=gcc
+SRCEXT:=c
+SRCDIR:=src
+OBJDIR:=obj
+BIN:=bin/fileprocessor
+ifeq '$(OS)' 'Windows_NT'
+BIN:=$(BIN).exe
+endif
 
-.PHONY: all clean reset
-all:
-	mkdir -p deps/bin
-	$(foreach dir,$(TARGETS),"$(MAKE)" -C $(dir) dep;)
+CFLAGS:=-std=c11 -Wpedantic -Wall -Wextra -Wconversion
+LDFLAGS:=
+
+DEBUGCFLAGS:=-Og -g -D _DEBUG
+DEBUGLDFLAGS:=-g
+
+RELEASECFLAGS:=-O3
+RELEASELDFLAGS:=
+
+.PHONY: debug release dirs clean
+debug: CFLAGS+=$(DEBUGCFLAGS)
+debug: LDFLAGS+=$(DEBUGLDFLAGS)
+debug: $(BIN)
+release: CFLAGS+=$(RELEASECFLAGS)
+release: LDFLAGS+=$(RELEASELDFLAGS)
+release: $(BIN)
+OBJS:=$(patsubst $(SRCDIR)/%.$(SRCEXT),$(OBJDIR)/%.o,$(wildcard $(SRCDIR)/*.$(SRCEXT)))
+-include $(OBJS:%.o=%.d)
+$(BIN): $(OBJS)
+	$(C) $(OBJS) -o $@ $(LDFLAGS)
+$(OBJDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
+	$(C) -c $< -o $@ -MMD $(CFLAGS)
+dirs:
+	mkdir -p $(OBJDIR) $(dir $(BIN))
 clean:
-	$(foreach dir,$(TARGETS),"$(MAKE)" -C $(dir) clean;)
-reset: clean
-	rm -rf deps
+	rm -rf $(OBJS) $(BIN)
+
 ifneq '$(OS)' 'Windows_NT'
+INSTALLPATH=/usr/local/bin/$(notdir $(BIN))
 .PHONY: install uninstall
-install: all
-	$(foreach dir,$(TARGETS),"$(MAKE)" -C $(dir) install;)
+install: release
+	sudo install -m 755 $(BIN) $(INSTALLPATH)
 uninstall:
-	$(foreach dir,$(TARGETS),"$(MAKE)" -C $(dir) uninstall;)
+	sudo rm -f $(INSTALLPATH)
 endif

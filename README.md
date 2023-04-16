@@ -1,26 +1,10 @@
-# C-Utils
+# fileprocessor
 
-Small C-Programs written for convenient Usage in other Projects.
-
-<details>
-    <summary>Table of Contents</summary>
-    <ol>
-        <li><a href="#getting-started">Getting Started</a></li>
-        <ul>
-            <li><a href="#prerequisites">Prerequisites</a></li>
-            <li><a href="#installation">Installation</a></li>
-        </ul>
-        <li><a href="#contributing">Contributing</a></li>
-    </ol>
-</details>
+Small C-Program written for convenience. Converts file-contents into C/C++ string literal macros.
 
 ## Getting Started
 
-To use any of these Programs locally you will need to clone this Repository and follow these instructions.
-
-### Prerequisites
-
-In order to use the Makefiles provided in this Repository need to have the following installed:
+In order to use the Makefile provided in this repository you need to have the following installed:
 
 - **gcc**
 - **make**
@@ -31,31 +15,15 @@ gcc --version
 make --version
 ```
 
-### Installation
-
 1. Enter the Directory of the Repo!
     ```sh
-    git clone git@github.com:GereonV/C-Utils.git
-    cd C-Utils
+    git clone git@github.com:GereonV/fileprocessor.git
+    cd fileprocessor
     ```
-1. Build everything even if you just want one Utility to make sure all dependencies are met!
+1. Build!
     ```sh
-    make
+    make dirs release
     ```
-1. **Congratulations!** All created files should now be in the *deps/* directory.
+1. **Congratulations!**
 
-    Alternatively on Linux you can use `make install` to directly put them into */usr/local/bin/*
-
-## Contributing
-
-Any contributions are appreciated.
-
-[Open an issue](https://github.com/GereonV/C-Utils/issues) with the "enhancement"-tag. Your suggestion will be considered for implementation.
-
-If you want to work on the Code yourself let me know in the Issue! After getting the "go-ahead" follow these steps:
-
-(You will need to fork the Project to do these commands)
-
-1. Create a Branch named after your issue's number (`git checkout -b i#<num>`)
-1. Implement your proposed Changes/Additions and commit them
-1. After the Feature is finished and you pushed your changes open a Pull Request
+On Linux you can now use `make install` to install the executable into */usr/local/bin/*.
